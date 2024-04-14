@@ -37,4 +37,17 @@ public class AccountController : BaseApiController
 
         return TypedResults.Ok(accountDto);
     }
+
+    [HttpPost("login")]
+    public async Task<ActionResult> Login(LoginDto loginDto){
+
+        if(await _accountRepository.verifyCredentials(loginDto)){
+
+            AccountDto? accountDto = await _accountRepository.GetAccountAsync(loginDto.Email);
+            return Ok(accountDto);
+        }
+
+        return BadRequest("las credenciales son incorrectas");
+
+    }
 }

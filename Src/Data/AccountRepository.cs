@@ -65,4 +65,21 @@ public class AccountRepository : IAccountRepository
     {
         return 0 < await _dataContext.SaveChangesAsync();
     }
+
+    public async Task<bool> verifyCredentials(LoginDto loginDto){
+
+        var userLoger = await _dataContext.Users.Where(u => u.Email == loginDto.Email).FirstOrDefaultAsync();
+        if(userLoger == null) return false;
+
+        using var hmac = new HMACSHA512(userLoger.PasswordSalt);
+
+        byte[] PasswordHashed = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
+        
+        for (int i = 0; i < PasswordHashed.Length; i++)
+        {
+            if (PasswordHashed[i] != userLoger.PasswordHash[i])
+                return false;
+        }
+        return true;
+    }
 }
