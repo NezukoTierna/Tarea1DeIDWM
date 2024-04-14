@@ -68,18 +68,24 @@ public class AccountRepository : IAccountRepository
 
     public async Task<bool> verifyCredentials(LoginDto loginDto){
 
+        //seach a user using de dataBase
         var userLoger = await _dataContext.Users.Where(u => u.Email == loginDto.Email).FirstOrDefaultAsync();
-        if(userLoger == null) return false;
+        //the user don't exist
+        if(userLoger == null) return false; //return false
 
+        //using hmac already encrypted
         using var hmac = new HMACSHA512(userLoger.PasswordSalt);
 
+        //encript the password
         byte[] PasswordHashed = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
         
+        //try the password if is diferent
         for (int i = 0; i < PasswordHashed.Length; i++)
         {
             if (PasswordHashed[i] != userLoger.PasswordHash[i])
                 return false;
         }
+        //all hashed are same, thus return true
         return true;
     }
 }
